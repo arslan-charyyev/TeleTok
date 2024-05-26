@@ -26,12 +26,15 @@ Built on top of [aiogram](https://github.com/aiogram/aiogram)
   users/chats)
 - `REPLY_TO_MESSAGE` - _JSON Boolean_. Whether the bot should reply to source message or not (default: `true`)
 - `WITH_CAPTIONS` - _JSON Boolean_. Whether the bot should include captions from TikTok in its message (default: `true`)
+- `SIGNTOK_URL` - _JSON String_. A URL to a [SignTok](https://github.com/pablouser1/SignTok) service, which adds support
+  for photos (default: ``)
+- `DISABLE_NOTIFICATION` - _JSON Boolean_. Disabled send notification (default: `false`)
 
 ## Local
 
 ```bash
 $ python3 -m venv venv
-$ (venv) pip install -r requirements.txt
+$ (venv) pip install .
 $ (venv) echo "API_TOKEN=foo:bar" >> .env
 $ (venv) export $(cat .env)
 $ (venv) python app
@@ -46,12 +49,18 @@ $ docker run -e "API_TOKEN=foo:bar" teletok
 
 ## Docker Compose
 
+Create .env file
+
 ```bash
 $ echo "API_TOKEN=foo:bar" >> .env
+```
+
+Build and start the containers
+
+```bash
 $ docker compose up -d --build
 ```
 
 # License
 
 MIT
-

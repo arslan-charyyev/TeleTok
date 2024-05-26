@@ -24,6 +24,11 @@ class DifferentPageError(RetryingError):
         super().__init__("tiktok_id is different from page_id")
 
 
+class SignTokError(RetryingError):
+    def __init__(self) -> None:
+        super().__init__("SignTok error")
+
+
 P = ParamSpec("P")
 T = TypeVar("T")
 

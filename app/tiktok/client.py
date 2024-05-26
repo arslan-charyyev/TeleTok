@@ -5,9 +5,11 @@ from datetime import UTC, datetime
 
 import httpx
 from bs4 import BeautifulSoup
+from httpx import URL
 
-from tiktok.data import ItemStruct
-from utils import DifferentPageError, NoDataError, NoScriptError, retries
+from settings import settings
+from tiktok.source import PhotoSource, Source, VideoSource
+from utils import DifferentPageError, NoDataError, NoScriptError, SignTokError, retries
 
 
 class AsyncTikTokClient(httpx.AsyncClient):
@@ -30,7 +32,7 @@ class AsyncTikTokClient(httpx.AsyncClient):
         )
 
     @retries(times=3)
-    async def get_page_data(self, url: str) -> ItemStruct:
+    async def get_page_data(self, url: str) -> Source:
         page = await self.get(url)
         page_id = page.url.path.rsplit("/", 1)[-1]
 
@@ -41,17 +43,63 @@ class AsyncTikTokClient(httpx.AsyncClient):
         else:
             raise NoScriptError
 
-        try:
-            data = script["__DEFAULT_SCOPE__"]["webapp.video-detail"]["itemInfo"]["itemStruct"]
-        except KeyError as ex:
-            raise NoDataError from ex
+        default_scope = script["__DEFAULT_SCOPE__"]
 
-        if data["id"] != page_id:
-            raise DifferentPageError
-        return ItemStruct.parse(data)
+        source: Source
 
-    async def get_video(self, url: str) -> bytes | None:
-        resp = await self.get(url)
-        if resp.is_error:
-            return None
-        return resp.content
+        if video_detail := default_scope.get("webapp.video-detail"):
+            try:
+                item_struct = video_detail["itemInfo"]["itemStruct"]
+            except KeyError as ex:
+                raise NoDataError from ex
+
+            if item_struct["id"] != page_id:
+                raise DifferentPageError
+
+            source = VideoSource(item_struct)
+        elif settings.signtok_url:
+            unsigned_url = URL(
+                "https://www.tiktok.com/api/item/detail/",
+                params={
+                    "aid": 1998,
+                    "app_language": "en",
+                    "app_name": "tiktok_web",
+                    "browser_language": "en-US",
+                    "browser_name": "Mozilla",
+                    "browser_platform": "Win32",
+                    "browser_version": "4.0",
+                    "device_id": "1234567890123456789",
+                    "device_platform": "web_pc",
+                    "itemId": page_id,
+                    "os": "windows",
+                    "region": "US",
+                    "screen_height": 720,
+                    "screen_width": 1280,
+                    "webcast_language": "en",
+                },
+            )
+
+            res = await self.post(settings.signtok_url, content=str(unsigned_url))
+
+            if not res.is_success or (res_json := res.json())["status"] != "ok":
+                raise SignTokError
+
+            signed_url = res_json["data"]["signed_url"]
+            user_agent = res_json["data"]["navigator"]["user_agent"]
+
+            item_detail_res = await self.get(signed_url, headers={"User-Agent": user_agent})
+
+            try:
+                item_struct = item_detail_res.json()["itemInfo"]["itemStruct"]
+            except KeyError as ex:
+                raise NoDataError from ex
+
+            source = PhotoSource(item_struct)
+        else:
+            raise NoDataError
+
+        return source
+
+    async def get_content(self, url: str) -> bytes:
+        res = await self.get(url)
+        return res.content

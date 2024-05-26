@@ -1,3 +1,5 @@
+include:
+  - compose.signtok.yaml
 services:
   teletok:
     build: .

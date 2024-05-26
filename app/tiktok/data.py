@@ -1,31 +1,28 @@
+from abc import ABC
 from dataclasses import dataclass
 
-
-@dataclass
-class Tiktok:
-    url: str = ""
-    description: str = ""
-    video: bytes | None = None
-
-    @property
-    def caption(self) -> str:
-        return f"{self.description}\n\n{self.url}"
+from aiogram.utils.formatting import Bold, Text
 
 
-@dataclass
-class ItemStruct:
-    page_id: str
-    video_url: str
+class Tiktok(ABC):
+    url: str
     description: str
 
-    @classmethod
-    def parse(cls, data: dict) -> "ItemStruct":
-        return ItemStruct(
-            page_id=data["id"],
-            video_url=(
-                (data["video"].get("playAddr", "") or data["video"].get("downloadAddr"))
-                .encode()
-                .decode("unicode_escape")
-            ),
-            description=data["desc"],
-        )
+    @property
+    def caption(self) -> Text:
+        return Text(f"{self.description}\n\n{self.url}")
+
+
+@dataclass
+class VideoTiktok(Tiktok):
+    video: bytes
+
+
+@dataclass
+class PhotoTiktok(Tiktok):
+    title: str
+    photos: list[bytes]
+
+    @property
+    def caption(self) -> Text:
+        return Text(Bold(self.title), "\n\n", super().caption)

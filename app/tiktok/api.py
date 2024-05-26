@@ -2,7 +2,8 @@ import asyncio
 from collections.abc import AsyncIterable
 
 from tiktok.client import AsyncTikTokClient
-from tiktok.data import Tiktok
+from tiktok.data import PhotoTiktok, Tiktok, VideoTiktok
+from tiktok.source import PhotoSource, VideoSource
 
 
 class TikTokAPI:
@@ -16,7 +17,19 @@ class TikTokAPI:
     @classmethod
     async def download_tiktok(cls, url: str) -> Tiktok:
         async with AsyncTikTokClient() as client:
-            if (item := await client.get_page_data(url=url)) and item.video_url:
-                video = await client.get_video(url=item.video_url)
-                return Tiktok(url=url, description=item.description, video=video)
-            return Tiktok()
+            source = await client.get_page_data(url)
+            tiktok: Tiktok
+
+            if isinstance(source, VideoSource):
+                video = await client.get_content(url=source.url)
+                tiktok = VideoTiktok(video)
+            elif isinstance(source, PhotoSource):
+                photos = [await client.get_content(url=url) for url in source.urls]
+                tiktok = PhotoTiktok(title=source.title, photos=photos)
+            else:
+                raise NotImplementedError
+
+            tiktok.url = url
+            tiktok.description = source.description
+
+            return tiktok
