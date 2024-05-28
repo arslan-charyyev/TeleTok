@@ -43,11 +43,9 @@ class AsyncTikTokClient(httpx.AsyncClient):
         else:
             raise NoScriptError
 
-        default_scope = script["__DEFAULT_SCOPE__"]
-
         source: Source
 
-        if video_detail := default_scope.get("webapp.video-detail"):
+        if video_detail := script["__DEFAULT_SCOPE__"].get("webapp.video-detail"):
             try:
                 item_struct = video_detail["itemInfo"]["itemStruct"]
             except KeyError as ex:
@@ -61,6 +59,7 @@ class AsyncTikTokClient(httpx.AsyncClient):
             unsigned_url = URL(
                 "https://www.tiktok.com/api/item/detail/",
                 params={
+                    "itemId": page_id,
                     "aid": 1998,
                     "app_language": "en",
                     "app_name": "tiktok_web",
@@ -70,7 +69,6 @@ class AsyncTikTokClient(httpx.AsyncClient):
                     "browser_version": "4.0",
                     "device_id": "1234567890123456789",
                     "device_platform": "web_pc",
-                    "itemId": page_id,
                     "os": "windows",
                     "region": "US",
                     "screen_height": 720,

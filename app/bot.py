@@ -22,7 +22,7 @@ filters = [
     | F.from_user.id.in_(settings.allowed_ids),
 ]
 
-# Need to fix mypy error
+# Needed to fix mypy error
 Media = list[InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo]
 
 

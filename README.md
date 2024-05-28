@@ -55,7 +55,7 @@ Create .env file
 $ echo "API_TOKEN=foo:bar" >> .env
 ```
 
-Build and start the containers
+Build and start containers
 
 ```bash
 $ docker compose up -d --build
