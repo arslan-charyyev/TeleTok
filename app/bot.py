@@ -30,7 +30,7 @@ Media = list[InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMedia
 @dp.channel_post(*filters)
 async def handle_tiktok_request(message: Message, bot: Bot) -> None:
     entries = [
-        message.text[e.offset : e.offset + e.length]
+        message.text[e.offset: e.offset + e.length]
         for e in message.entities or []
         if message.text is not None
     ]
@@ -48,7 +48,7 @@ async def handle_tiktok_request(message: Message, bot: Bot) -> None:
         disable_notification = settings.disable_notification
 
         if isinstance(tiktok, VideoTiktok):
-            video = BufferedInputFile(tiktok.video, filename="video.mp4")
+            video = BufferedInputFile(tiktok.video, filename="video")
 
             await bot.send_video(
                 chat_id=chat_id,
@@ -58,6 +58,8 @@ async def handle_tiktok_request(message: Message, bot: Bot) -> None:
                 reply_to_message_id=reply_to_message_id,
                 disable_notification=disable_notification,
             )
+
+
         elif isinstance(tiktok, PhotoTiktok):
             first_with_caption = InputMediaPhoto(
                 media=BufferedInputFile(tiktok.photos[0], filename="image"),
@@ -70,14 +72,19 @@ async def handle_tiktok_request(message: Message, bot: Bot) -> None:
                 for photo in tiktok.photos[1:]
             ]
 
-            photos: Media = [first_with_caption, *rest_without_captions]
+            photos = [first_with_caption, *rest_without_captions]
 
             # Can send up to 10 photos max, so we split the photos into batches
             image_count = 10
+            last_message_id: int | None = None
             for n in range(0, len(tiktok.photos), image_count):
-                await bot.send_media_group(
+                messages = await bot.send_media_group(
                     chat_id=chat_id,
-                    media=photos[n : n + image_count],
-                    reply_to_message_id=reply_to_message_id,
+                    media=photos[n: n + image_count],
+                    reply_to_message_id=last_message_id or reply_to_message_id,
                     disable_notification=disable_notification,
                 )
+
+                last_message_id = messages[-1].message_id
+        else:
+            raise NotImplementedError

@@ -1,6 +1,7 @@
 import asyncio
 from collections.abc import AsyncIterable
 
+from decorators import retries
 from tiktok.client import AsyncTikTokClient
 from tiktok.data import PhotoTiktok, Tiktok, VideoTiktok
 from tiktok.source import PhotoSource, VideoSource
@@ -15,6 +16,7 @@ class TikTokAPI:
             yield tiktok
 
     @classmethod
+    @retries()
     async def download_tiktok(cls, url: str) -> Tiktok:
         async with AsyncTikTokClient() as client:
             source = await client.get_page_data(url)

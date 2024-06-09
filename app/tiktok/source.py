@@ -11,7 +11,7 @@ class VideoSource(Source):
     url: str
 
     def __init__(self, item_struct: dict) -> None:
-        self.description = item_struct["desc"]
+        self.description = item_struct["desc"].strip()
         self.url = item_struct["video"].get("playAddr") or item_struct["video"].get("downloadAddr")
 
 
@@ -21,8 +21,10 @@ class PhotoSource(Source):
     urls: list[str]
 
     def __init__(self, item_struct: dict) -> None:
-        self.title = item_struct["imagePost"]["title"]
-        self.description = " ".join([content["desc"] for content in item_struct["contents"]])
+        self.title = item_struct["imagePost"]["title"].strip()
+        self.description = " ".join(
+            [content["desc"] for content in item_struct.get("contents", [])],
+        )
         self.urls = [
             image["imageURL"]["urlList"][0] for image in item_struct["imagePost"]["images"]
         ]

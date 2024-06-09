@@ -2,6 +2,11 @@
 
 # [TeleTok](https://t.me/TeleTockerBot): Telegram bot for TikTok
 
+## Fork description
+
+This fork adds support for downloading photos via a [SignTok](https://github.com/pablouser1/SignTok) service. You can
+self-host the SignTok service or use the public instance at `https://signtok.pabloferreiro.es`
+
 ## Description
 
 This bot will send you a video from a TikTok. Pretty simple.
@@ -26,7 +31,7 @@ Built on top of [aiogram](https://github.com/aiogram/aiogram)
   users/chats)
 - `REPLY_TO_MESSAGE` - _JSON Boolean_. Whether the bot should reply to source message or not (default: `true`)
 - `WITH_CAPTIONS` - _JSON Boolean_. Whether the bot should include captions from TikTok in its message (default: `true`)
-- `SIGNTOK_URL` - _JSON String_. A URL to a [SignTok](https://github.com/pablouser1/SignTok) service, which adds support
+- `SIGNTOK_URL` - _JSON String_. A URL to a SignTok service, which adds support
   for photos (default: ``)
 - `DISABLE_NOTIFICATION` - _JSON Boolean_. Disabled send notification (default: `false`)
 

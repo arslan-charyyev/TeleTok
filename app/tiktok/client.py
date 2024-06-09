@@ -7,9 +7,10 @@ import httpx
 from bs4 import BeautifulSoup
 from httpx import URL
 
+from decorators import retries
+from errors import ContentFetchError, DifferentPageError, NoDataError, NoScriptError, SignTokError
 from settings import settings
 from tiktok.source import PhotoSource, Source, VideoSource
-from utils import DifferentPageError, NoDataError, NoScriptError, SignTokError, retries
 
 
 class AsyncTikTokClient(httpx.AsyncClient):
@@ -31,7 +32,7 @@ class AsyncTikTokClient(httpx.AsyncClient):
             follow_redirects=True,
         )
 
-    @retries(times=3)
+    @retries()
     async def get_page_data(self, url: str) -> Source:
         page = await self.get(url)
         page_id = page.url.path.rsplit("/", 1)[-1]
@@ -100,4 +101,8 @@ class AsyncTikTokClient(httpx.AsyncClient):
 
     async def get_content(self, url: str) -> bytes:
         res = await self.get(url)
+
+        if res.is_error:
+            raise ContentFetchError
+
         return res.content
