@@ -30,7 +30,7 @@ Media = list[InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMedia
 @dp.channel_post(*filters)
 async def handle_tiktok_request(message: Message, bot: Bot) -> None:
     entries = [
-        message.text[e.offset: e.offset + e.length]
+        message.text[e.offset : e.offset + e.length]
         for e in message.entities or []
         if message.text is not None
     ]
@@ -59,7 +59,6 @@ async def handle_tiktok_request(message: Message, bot: Bot) -> None:
                 disable_notification=disable_notification,
             )
 
-
         elif isinstance(tiktok, PhotoTiktok):
             first_with_caption = InputMediaPhoto(
                 media=BufferedInputFile(tiktok.photos[0], filename="image"),
@@ -72,7 +71,7 @@ async def handle_tiktok_request(message: Message, bot: Bot) -> None:
                 for photo in tiktok.photos[1:]
             ]
 
-            photos = [first_with_caption, *rest_without_captions]
+            photos: Media = [first_with_caption, *rest_without_captions]
 
             # Can send up to 10 photos max, so we split the photos into batches
             image_count = 10
@@ -80,7 +79,7 @@ async def handle_tiktok_request(message: Message, bot: Bot) -> None:
             for n in range(0, len(tiktok.photos), image_count):
                 messages = await bot.send_media_group(
                     chat_id=chat_id,
-                    media=photos[n: n + image_count],
+                    media=photos[n : n + image_count],
                     reply_to_message_id=last_message_id or reply_to_message_id,
                     disable_notification=disable_notification,
                 )

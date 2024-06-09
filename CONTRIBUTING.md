@@ -38,9 +38,13 @@ ruff check app
 mypy app
 ```
 
-- formatter
+- formatter (check)
 
 ```shell
 black --check app
 ```
 
+- formatter (fix)
+```shell
+black app
+```

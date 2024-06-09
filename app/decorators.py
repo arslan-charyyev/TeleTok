@@ -13,12 +13,12 @@ type Decorator[T] = Callable[Func[T], Wrapper[T]]
 def retries[T](times: int = 3) -> Decorator[T]:
     def decorator(func: Func[T]) -> Wrapper[T]:
         @wraps(func)
-        async def wrapper(*args: ..., **kwargs: ...) -> T:
+        async def wrapper(*args, **kwargs) -> T:
             attempts = 0
             while True:
                 try:
                     attempts += 1
-                    return await  func(*args, **kwargs)
+                    return await func(*args, **kwargs)
                 except RetryingError:
                     if attempts >= times:
                         raise
